@@ -156,4 +156,12 @@
     <string name="pref_title_face_mesh_use_case" translatable="false">Use Case</string>
     <string name="pref_key_face_mesh_use_case" translatable="false">face_mesh_use_case</string>
 
+    <string name="fb_pushup_back">Start in a high plank position. \nMaintain a straight back. Keep your shoulder, glute and heels in a straight line. Engage your core muscles, glutes and legs to align your spine.
+</string>
+    <string name="fb_pushup_legs">Position your wrists below your shoulders. \nBend your elbows and descend in a gradual, controlled motion until your chest touches the floor. Keep elbows tucked in throughout the movement.
+</string>
+    <string name="fb_squat_back">Maintain a straight back. \nKeep your head, shoulder and glutes in a straight line. Look straight ahead.</string>
+    <string name="fb_squat_legs">Keep your feet shoulder width apart. As you squat, move your glutes backwards. \nLower yourself till your hamstrings are parallel to the ground. Keep your knees in line with your toes.
+</string>
+
 </resources>

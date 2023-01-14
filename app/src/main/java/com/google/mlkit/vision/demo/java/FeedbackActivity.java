@@ -9,6 +9,7 @@ import android.os.Bundle;
 import android.os.Environment;
 import android.view.View;
 import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.annotation.Nullable;
@@ -25,7 +26,8 @@ public class FeedbackActivity  extends AppCompatActivity {
     private Button button_screenshot;
     private SharedPreferences sharedPreferences;
     private SharedPreferences.Editor editor;
-    private TextView textview_count;
+    private TextView textview_count, textview_exercise, textview_fb_back, textview_fb_legs, textview_1;
+    private ImageView image_exercise_back, image_exercise_legs;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -39,6 +41,12 @@ public class FeedbackActivity  extends AppCompatActivity {
         editor = sharedPreferences.edit();
 
         textview_count = findViewById(R.id.textview_count);
+        textview_exercise = findViewById(R.id.textview_exercise);
+        image_exercise_back = findViewById(R.id.image_exercise_back);
+        image_exercise_legs = findViewById(R.id.image_exercise_legs);
+        textview_fb_back = findViewById(R.id.textview_fb_back);
+        textview_fb_legs = findViewById(R.id.textview_fb_legs);
+        textview_1 = findViewById(R.id.textview_1);
         setCount();
 
         button_screenshot = findViewById(R.id.button_screenshot);
@@ -92,5 +100,26 @@ public class FeedbackActivity  extends AppCompatActivity {
         // read from shared preference
         int count = sharedPreferences.getInt("EXERCISE_COUNT",0);
         textview_count.setText("Exercise count- " + count);
+
+        int exercise = sharedPreferences.getInt("SELECTED_EXERCISE",0);
+        //0 - pushups, 1 - squats
+        String e = exercise==0?"PUSHUPS":"SQUATS";
+        textview_exercise.setText("Exercise selected- " + e);
+
+        if(exercise==0){
+            //show image, give text feedback
+            image_exercise_back.setImageResource(R.drawable.image_pushup);
+            image_exercise_legs.setImageResource(R.drawable.image_pushup);
+            textview_fb_back.setText(R.string.fb_pushup_back);
+            textview_fb_legs.setText(R.string.fb_pushup_legs);
+            textview_1.setText("HANDS");
+        }
+        else{
+            image_exercise_back.setImageResource(R.drawable.image_squat);
+            image_exercise_legs.setImageResource(R.drawable.image_squat);
+            textview_fb_back.setText(R.string.fb_squat_back);
+            textview_fb_legs.setText(R.string.fb_squat_legs);
+            textview_1.setText("LEGS");
+        }
     }
 }
