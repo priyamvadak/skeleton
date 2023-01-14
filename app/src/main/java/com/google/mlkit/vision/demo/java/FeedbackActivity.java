@@ -1,12 +1,16 @@
 package com.google.mlkit.vision.demo.java;
 
 import android.content.Context;
+import android.content.ContextWrapper;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
+import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
@@ -19,6 +23,17 @@ import com.google.mlkit.vision.demo.R;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.util.Date;
+import android.content.Context;
+import android.content.ContextWrapper;
+import android.graphics.Bitmap;
+import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.Drawable;
+import android.os.Bundle;
+import android.util.Log;
+import android.view.View;
+import android.widget.Button;
+import java.io.File;
+import java.io.FileOutputStream;
 
 public class FeedbackActivity  extends AppCompatActivity {
 
@@ -46,6 +61,7 @@ public class FeedbackActivity  extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 takeScreenshot(); //todo fix
+                System.out.println("Took screenshot!");
             }
         });
     }
@@ -57,15 +73,16 @@ public class FeedbackActivity  extends AppCompatActivity {
 
         try {
             // image naming and path  to include sd card  appending name you choose for file
-            String mPath = Environment.getExternalStorageDirectory().toString() + "/"  + "screenshot.jpg";
-
+           // String mPath = Environment.getExternalStorageDirectory().toString()+"/img.jpg" ;
+            ContextWrapper cw = new ContextWrapper(getApplicationContext());
+            File directory = cw.getDir("imageDir", Context.MODE_PRIVATE);
+            File imageFile= new File(directory, "screenshot_pushup4" + ".jpg");
             // create bitmap screen capture
             View v1 = getWindow().getDecorView().getRootView();
             v1.setDrawingCacheEnabled(true);
             Bitmap bitmap = Bitmap.createBitmap(v1.getDrawingCache());
             v1.setDrawingCacheEnabled(false);
 
-            File imageFile = new File(mPath);
 
             FileOutputStream outputStream = new FileOutputStream(imageFile);
             int quality = 100;
