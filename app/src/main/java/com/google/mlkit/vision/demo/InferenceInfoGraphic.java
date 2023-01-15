@@ -74,17 +74,6 @@ public class InferenceInfoGraphic extends GraphicOverlay.Graphic {
     if (!showLatencyInfo) {
       return;
     }
-    // Draw FPS (if valid) and inference latency
-    if (framesPerSecond != null) {
-      canvas.drawText(
-          "FPS: " + framesPerSecond + ", Frame latency: " + frameLatency + " ms",
-          x,
-          y + TEXT_SIZE,
-          textPaint);
-    } else {
-      canvas.drawText("Frame latency: " + frameLatency + " ms", x, y + TEXT_SIZE, textPaint);
-    }
-    canvas.drawText(
-        "Detector latency: " + detectorLatency + " ms", x, y + TEXT_SIZE * 2, textPaint);
+
   }
 }

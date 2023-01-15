@@ -19,7 +19,7 @@
         app:layout_constraintTop_toTopOf="parent"
         android:paddingTop="40dp"
         android:textSize="20dp"
-        android:text="FEEDBACK TO USER"
+        android:text="Form Evaluation"
         />
 
     <androidx.appcompat.widget.LinearLayoutCompat
@@ -29,18 +29,33 @@
         android:layout_margin="20dp"
         android:orientation="vertical"
         >
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/workoutScore"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            android:paddingTop="40dp"
+            android:textSize="20dp"
+            />
 
         <ImageView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:id="@+id/image_exercise_back"/>
-
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="BACK"
+            android:text="Spine"
             android:textSize="20dp"/>
 
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/textview_fb_backangle"
+            android:textSize="15sp"
+            />
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -58,6 +73,12 @@
             android:id="@+id/textview_1"
             android:textSize="20dp"/>
 
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/textview_fb_legsangle"
+            android:textSize="15sp"
+            />
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"

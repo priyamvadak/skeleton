@@ -17,8 +17,10 @@
 package com.google.mlkit.vision.demo.java;
 
 import android.content.Context;
+import android.content.ContextWrapper;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -41,13 +43,20 @@ import com.google.mlkit.vision.demo.CameraSourcePreview;
 import com.google.mlkit.vision.demo.GraphicOverlay;
 import com.google.mlkit.vision.demo.R;
 import com.google.mlkit.vision.demo.java.posedetector.PoseDetectorProcessor;
+import com.google.mlkit.vision.demo.java.posedetector.PoseGraphic;
 import com.google.mlkit.vision.demo.preference.PreferenceUtils;
 import com.google.mlkit.vision.demo.preference.SettingsActivity;
 import com.google.mlkit.vision.pose.PoseDetectorOptionsBase;
+import com.google.mlkit.vision.pose.PoseLandmark;
 
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
+import java.util.Timer;
+import java.util.TimerTask;
 
 /** Live preview demo for ML Kit APIs. */
 @KeepName
@@ -62,8 +71,38 @@ public final class LivePreviewActivity extends AppCompatActivity implements OnIt
   private String selectedModel = POSE_DETECTION;
 
   private Button buttonFeedback;
+  private Button buttonRecord;
   private TextView textview_exercise;
+  TimerTask timerTaskUI;
 
+  public void initializeTimerTaskUI() {
+      timerTaskUI = new TimerTask() {
+      public void run() {
+        runOnUiThread(new Runnable() {
+          @Override
+          public void run() {
+            Log.d(TAG, "Check for wrong posture.");
+            if (PoseGraphic.mistakeSpineDetected){
+              Log.d(TAG, "Take screenshot of wrong spine posture.");
+              takeScreenshotSpine();
+            }
+            if (PoseGraphic.mistakeArmsDetected){
+              Log.d(TAG, "Take screenshot of wrong arms posture.");
+              takeScreenshotArms();
+            }
+            if (PoseGraphic.mistakeSquatDetected){
+              Log.d(TAG, "Take screenshot of wrong squat posture.");
+              takeScreenshotSquat();
+            }
+            if (PoseGraphic.mistakeSquatLegsDetected){
+              Log.d(TAG, "Take screenshot of wrong squat legs posture.");
+              takeScreenshotSquatLegs();
+            }
+          }
+        });
+      }
+    };
+  }
   @Override
   protected void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
@@ -81,15 +120,33 @@ public final class LivePreviewActivity extends AppCompatActivity implements OnIt
     }
 
     buttonFeedback = findViewById(R.id.feedback_button);
+    buttonRecord = findViewById(R.id.record_button);
     buttonFeedback.setOnClickListener(new View.OnClickListener() {
       @Override
       public void onClick(View view) {
+
+        PoseGraphic.mistakeSpineDetected = false;
+        PoseGraphic.mistakeArmsDetected = false;
+        PoseGraphic.mistakeSquatDetected = false;
+        timerTaskUI.cancel();
+        Log.d("cancel timer", "Cancel timer.");
         Intent intent = new Intent(LivePreviewActivity.this, FeedbackActivity.class);
         startActivity(intent);
       }
     });
 
-    textview_exercise = findViewById(R.id.textview_exercise);
+    buttonRecord.setOnClickListener(new View.OnClickListener() {
+      @Override
+      public void onClick(View view) {
+
+        Timer timerUI = new Timer();
+        initializeTimerTaskUI();
+        timerUI.schedule(timerTaskUI,0,500);
+        buttonRecord.setEnabled(false);
+      }
+    });
+
+      textview_exercise = findViewById(R.id.textview_exercise);
     SharedPreferences sharedPreferences = getApplicationContext().getSharedPreferences("SHARED_PREFERENCE", Context.MODE_PRIVATE);
     int exercise = sharedPreferences.getInt("SELECTED_EXERCISE",0);
     //0 - pushups, 1 - squats
@@ -222,6 +279,116 @@ public final class LivePreviewActivity extends AppCompatActivity implements OnIt
     Log.d(TAG, "onResume");
     createCameraSource(selectedModel);
     startCameraSource();
+    buttonRecord.setEnabled(true);
+    }
+
+  public void takeScreenshotSquatLegs() {
+    Date now = new Date();
+    android.text.format.DateFormat.format("yyyy-MM-dd_hh:mm:ss", now);
+
+    try {
+      // image naming and path  to include sd card  appending name you choose for file
+      ContextWrapper cw = new ContextWrapper(getApplicationContext());
+      File directory = cw.getDir("imageDir", Context.MODE_PRIVATE);
+      File imageFile= new File(directory, "screenshot_squat2" + ".jpg");
+      // create bitmap screen capture
+      View v1 = getWindow().getDecorView().getRootView();
+      v1.setDrawingCacheEnabled(true);
+      Bitmap bitmap = Bitmap.createBitmap(v1.getDrawingCache());
+      v1.setDrawingCacheEnabled(false);
+
+
+      FileOutputStream outputStream = new FileOutputStream(imageFile);
+      int quality = 100;
+      bitmap.compress(Bitmap.CompressFormat.JPEG, quality, outputStream);
+      outputStream.flush();
+      outputStream.close();
+
+    } catch (Throwable e) {
+      // Several error may come out with file handling or DOM
+      e.printStackTrace();
+    }
+  }
+  public void takeScreenshotSquat() {
+    Date now = new Date();
+    android.text.format.DateFormat.format("yyyy-MM-dd_hh:mm:ss", now);
+
+    try {
+      // image naming and path  to include sd card  appending name you choose for file
+      ContextWrapper cw = new ContextWrapper(getApplicationContext());
+      File directory = cw.getDir("imageDir", Context.MODE_PRIVATE);
+      File imageFile= new File(directory, "screenshot_squat" + ".jpg");
+      // create bitmap screen capture
+      View v1 = getWindow().getDecorView().getRootView();
+      v1.setDrawingCacheEnabled(true);
+      Bitmap bitmap = Bitmap.createBitmap(v1.getDrawingCache());
+      v1.setDrawingCacheEnabled(false);
+
+
+      FileOutputStream outputStream = new FileOutputStream(imageFile);
+      int quality = 100;
+      bitmap.compress(Bitmap.CompressFormat.JPEG, quality, outputStream);
+      outputStream.flush();
+      outputStream.close();
+
+    } catch (Throwable e) {
+      // Several error may come out with file handling or DOM
+      e.printStackTrace();
+    }
+  }
+  public void takeScreenshotArms() {
+    Date now = new Date();
+    android.text.format.DateFormat.format("yyyy-MM-dd_hh:mm:ss", now);
+
+    try {
+      // image naming and path  to include sd card  appending name you choose for file
+      ContextWrapper cw = new ContextWrapper(getApplicationContext());
+      File directory = cw.getDir("imageDir", Context.MODE_PRIVATE);
+      File imageFile= new File(directory, "screenshot_arms" + ".jpg");
+      // create bitmap screen capture
+      View v1 = getWindow().getDecorView().getRootView();
+      v1.setDrawingCacheEnabled(true);
+      Bitmap bitmap = Bitmap.createBitmap(v1.getDrawingCache());
+      v1.setDrawingCacheEnabled(false);
+
+
+      FileOutputStream outputStream = new FileOutputStream(imageFile);
+      int quality = 100;
+      bitmap.compress(Bitmap.CompressFormat.JPEG, quality, outputStream);
+      outputStream.flush();
+      outputStream.close();
+
+    } catch (Throwable e) {
+      // Several error may come out with file handling or DOM
+      e.printStackTrace();
+    }
+  }
+  public void takeScreenshotSpine() {
+    Date now = new Date();
+    android.text.format.DateFormat.format("yyyy-MM-dd_hh:mm:ss", now);
+
+    try {
+      // image naming and path  to include sd card  appending name you choose for file
+      ContextWrapper cw = new ContextWrapper(getApplicationContext());
+      File directory = cw.getDir("imageDir", Context.MODE_PRIVATE);
+      File imageFile= new File(directory, "screenshot_spine" + ".jpg");
+      // create bitmap screen capture
+      View v1 = getWindow().getDecorView().getRootView();
+      v1.setDrawingCacheEnabled(true);
+      Bitmap bitmap = Bitmap.createBitmap(v1.getDrawingCache());
+      v1.setDrawingCacheEnabled(false);
+
+
+      FileOutputStream outputStream = new FileOutputStream(imageFile);
+      int quality = 100;
+      bitmap.compress(Bitmap.CompressFormat.JPEG, quality, outputStream);
+      outputStream.flush();
+      outputStream.close();
+
+    } catch (Throwable e) {
+      // Several error may come out with file handling or DOM
+      e.printStackTrace();
+    }
   }
 
   /** Stops the camera. */
@@ -238,4 +405,5 @@ public final class LivePreviewActivity extends AppCompatActivity implements OnIt
       cameraSource.release();
     }
   }
+
 }

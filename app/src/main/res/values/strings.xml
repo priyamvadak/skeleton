@@ -160,8 +160,11 @@
 </string>
     <string name="fb_pushup_legs">Position your wrists below your shoulders. \nBend your elbows and descend in a gradual, controlled motion until your chest touches the floor. Keep elbows tucked in throughout the movement.
 </string>
-    <string name="fb_squat_back">Maintain a straight back. \nKeep your head, shoulder and glutes in a straight line. Look straight ahead.</string>
-    <string name="fb_squat_legs">Keep your feet shoulder width apart. As you squat, move your glutes backwards. \nLower yourself till your hamstrings are parallel to the ground. Keep your knees in line with your toes.
-</string>
+    <string name="fb_squat_back">Try to maintain a straight back. \nKeep your head, shoulder and glutes in a straight line. Look straight ahead.</string>
+    <string name="fb_squat_legs">Aim for a parallel line to the ground. Also, make sure you do not squat too low as this can ruin your knees. </string>
+
+    <string name="record">Record</string>
+    <string name="pick_your_workout">Pick your workout!</string>
+    <string name="test_your_workout_form_by_recording_an_exercise">Test your workout form by recording an exercise!</string>
 
 </resources>
