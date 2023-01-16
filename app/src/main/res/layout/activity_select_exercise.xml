@@ -24,7 +24,7 @@
       android:paddingBottom="32dp"
       android:fontFamily="google-sans"
       android:gravity="center_horizontal"
-      android:text="Select an exercise - "
+      android:text="@string/pick_your_workout"
       android:textColor="@color/white"
       android:textSize="18sp"/>
 

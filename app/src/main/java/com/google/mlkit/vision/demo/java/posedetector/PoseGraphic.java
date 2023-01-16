@@ -20,10 +20,15 @@ import static java.lang.Math.abs;
 import static java.lang.Math.atan;
 
 import android.content.Context;
+import android.content.ContextWrapper;
 import android.content.SharedPreferences;
+import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
+import android.graphics.PointF;
+import android.util.Log;
+import android.view.View;
 
 import com.google.mlkit.vision.common.PointF3D;
 import com.google.mlkit.vision.demo.GraphicOverlay;
@@ -31,11 +36,26 @@ import com.google.mlkit.vision.demo.GraphicOverlay.Graphic;
 import com.google.mlkit.vision.pose.Pose;
 import com.google.mlkit.vision.pose.PoseLandmark;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 /** Draw the detected pose in preview. */
 public class PoseGraphic extends Graphic {
   static Canvas mycanvas;
+  public static int mistakes = 0;
+  public static int checks = 0;
+  public static double wrongPushupSpineAngle = 0;
+  public static double wrongSquatLegsAngle = 0;
+  public static double wrongSquatShoulderAngle = 0;
+  public static double wrongPushupArmsAngle = 0;
+
+  public static boolean mistakeSpineDetected = false;
+  public static boolean mistakeArmsDetected = false;
+  public static boolean mistakeSquatDetected = false;
+  public static boolean mistakeSquatLegsDetected = false;
   //static Paint myleftPaint;
   private static final float DOT_RADIUS = 8.0f;
   private static final float IN_FRAME_LIKELIHOOD_TEXT_SIZE = 30.0f;
@@ -54,6 +74,7 @@ public class PoseGraphic extends Graphic {
   /*private final Paint leftPaint;
   private final Paint rightPaint;*/
   private final Paint whitePaint;
+  private final Paint redPaint;
   private final Paint greenPaint;
 
   private PoseLandmark rightShoulder, leftShoulder, rightHip, leftHip,
@@ -92,6 +113,10 @@ public class PoseGraphic extends Graphic {
     greenPaint.setColor(Color.GREEN);
     greenPaint.setTextSize(IN_FRAME_LIKELIHOOD_TEXT_SIZE);
 
+    redPaint = new Paint();
+    redPaint.setStrokeWidth(STROKE_WIDTH);
+    redPaint.setColor(Color.RED);
+    redPaint.setTextSize(IN_FRAME_LIKELIHOOD_TEXT_SIZE);
   }
 
   @Override
@@ -120,23 +145,28 @@ public class PoseGraphic extends Graphic {
     int exercise = sharedPreferences.getInt("SELECTED_EXERCISE",0);
     isPushupSelected = exercise==0?true:false;  //0 - pushups, 1 - squats
     displayCorrectPosture(isFacingRightSide);
-
-
-    
-
   }
 
   private void displayCorrectPosture(boolean isFacingRightSide) {
     if(isPushupSelected){ //pushup
       displayPushupPoints(isFacingRightSide);
-      if (isFacingRightSide){ //facing right side pushup
+      if (!isFacingRightSide){ //facing right side pushup
+        checks ++;
         //correct posture (left side)
         drawLine(mycanvas, leftShoulder, leftAnkle, greenPaint);
+        mistakeSpineDetected = false;
+        if (checkPushupPosture(leftShoulder,leftHip,leftKnee,leftAnkle)){
+          Log.d("Wrong posture", "Wrong spine posture detected.");
+          mistakes ++;
+          drawLine(mycanvas, leftShoulder, leftHip, redPaint);
+          drawLine(mycanvas, leftHip, leftKnee, redPaint);
+          mistakeSpineDetected = true;
+        }
 
         int angle = (int)Math.toDegrees(abs(atan((leftShoulder.getPosition3D().getY() - leftWrist.getPosition3D().getY())/(leftWrist.getPosition3D().getX() - leftAnkle.getPosition3D().getX()))));
+        mistakeArmsDetected = false;
         if(angle>20){
           //connect shoulder to wrist only when body is atleast at an angle of 20deg
-          drawLine(mycanvas, leftShoulder, leftWrist, whitePaint);
           if(pushupBottomReached){
             counterPushup++;
             saveCounter(counterPushup);
@@ -145,11 +175,15 @@ public class PoseGraphic extends Graphic {
         }
         if(angle<12){
           pushupBottomReached= true;
+          mistakeSpineDetected = false;
+          if (checkPushupPostureArms(leftShoulder,leftWrist)){
+            Log.d("Wrong arms posture", "Wrong arm posture detected.");
+            drawLine(mycanvas, leftShoulder, leftWrist,redPaint);
+            mistakeArmsDetected = true;
+            mistakes ++;
+          }
         }
-        //current posture
-        drawLine(mycanvas, leftShoulder, leftHip, whitePaint);
-        drawLine(mycanvas, leftHip, leftKnee, whitePaint);
-        drawLine(mycanvas, leftKnee, leftAnkle, whitePaint);
+        // draw current posture
       }
       else{ //facing left side pushup todo
         //drawLine(mycanvas, rightShoulder, rightAnkle, greenPaint);
@@ -157,15 +191,113 @@ public class PoseGraphic extends Graphic {
     }
     else{ //squat todo
       displaySquatPoints(isFacingRightSide);
-      if(isFacingRightSide){
-        //facing right side squat
 
-      }
+      if(!isFacingRightSide){
+        //facing right side squat
+        checks ++;
+
+        mistakeSquatDetected = false;
+
+        double slopeHipShoulder= slope(leftHip.getPosition().x, leftHip.getPosition().y,leftShoulder.getPosition().x,leftShoulder.getPosition().y);
+        double slopeHipKnee = slope(leftHip.getPosition().x,leftHip.getPosition().y,leftKnee.getPosition().x,leftKnee.getPosition().y);
+        double anglejudge = findAngle(slopeHipShoulder,slopeHipKnee);
+        System.out.println("Angle judge =  degrees" + anglejudge);
+        if (anglejudge<60 && anglejudge>45) {
+          if (checkSquatPostureShoulder(leftShoulder, leftAnkle)) {
+            Log.d("Wrong posture", "Wrong squat posture detected.");
+            mistakes ++;
+            drawLine(mycanvas, leftShoulder, leftHip, redPaint);
+            drawLine(mycanvas, leftHip, leftKnee, redPaint);
+            mistakeSquatDetected = true;
+          }
+        }
+        else if (anglejudge>10 && anglejudge<45){
+            if (checkSquatPostureLegs(leftHip,leftKnee,leftAnkle)){
+              Log.d("Wrong posture", "Wrong squat posture detected.");
+              mistakes ++;
+              drawLine(mycanvas, leftHip, leftKnee, redPaint);
+              drawLine(mycanvas, leftKnee, leftAnkle, redPaint);
+              mistakeSquatLegsDetected = true;
+            }
+          }
+        }
       else{
         //facing left side squat
 
       }
     }
+  }
+  static float slope(float x1, float y1, float x2,
+                     float y2)
+  {
+    if (x2 - x1 != 0)
+      return (y2 - y1) / (x2 - x1);
+    return Integer.MAX_VALUE;
+  }
+  static double findAngle(double M1, double M2)
+  {
+
+    // Store the tan value  of the angle
+    double angle = Math.abs((M2 - M1) / (1 + M1 * M2));
+
+    // Calculate tan inverse of the angle
+    double ret = Math.atan(angle);
+
+    // Convert the angle from
+    // radian to degree
+    double val = (ret * 180) / 3.14f;
+
+    // Print the result
+    System.out.println(val);
+    return val;
+  }
+  private boolean checkSquatPostureLegs(PoseLandmark leftHip,PoseLandmark leftKnee,PoseLandmark leftAnkle){
+    // If the angle created between
+    double slopeHipKnee= slope(leftHip.getPosition().x, leftHip.getPosition().y,leftKnee.getPosition().x,leftKnee.getPosition().y);
+    double slopeKneeAnkle = slope(leftKnee.getPosition().x,leftKnee.getPosition().y,leftAnkle.getPosition().x,leftAnkle.getPosition().y);
+    double angle1st = findAngle(slopeHipKnee,slopeKneeAnkle);
+    System.out.println("Angle 1st =  degrees" + angle1st);
+    if (angle1st<85){
+      wrongSquatLegsAngle = angle1st;
+      return true;
+    }
+    return false;
+  }
+  private boolean checkSquatPostureShoulder(PoseLandmark leftShoulder,PoseLandmark leftWrist){
+    // If the angle created between
+    double slopeShoulderHip = slope(leftShoulder.getPosition().x, leftShoulder.getPosition().y,leftHip.getPosition().x,leftHip.getPosition().y);
+    double slopeHipKnee = slope(0,0,leftWrist.getPosition().x,leftWrist.getPosition().y);
+    double angle1st = findAngle(slopeHipKnee,slopeShoulderHip);
+    System.out.println("Angle 1st =  degrees" + angle1st);
+    if (angle1st<80){
+      wrongSquatShoulderAngle =180- angle1st;
+      return true;
+    }
+    return false;
+  }
+  private boolean checkPushupPostureArms(PoseLandmark leftShoulder,PoseLandmark leftWrist){
+    // If the angle created between
+    double slopeShoulderHip = slope(leftShoulder.getPosition().x, leftShoulder.getPosition().y,leftHip.getPosition().x,leftHip.getPosition().y);
+    double slopeHipKnee = slope(0,0,leftWrist.getPosition().x,leftWrist.getPosition().y);
+    double angle1st = findAngle(slopeHipKnee,slopeShoulderHip);
+    System.out.println("Angle 2nd = degrees" + angle1st);
+    if (angle1st<80){
+      wrongPushupArmsAngle = angle1st;
+      return true;
+    }
+    return false;
+  }
+  private boolean checkPushupPosture(PoseLandmark leftShoulder,PoseLandmark leftHip, PoseLandmark leftKnee, PoseLandmark leftAnkle ){
+    // If the angle created between
+    double slopeShoulderHip = slope(leftShoulder.getPosition().x, leftShoulder.getPosition().y,leftHip.getPosition().x,leftHip.getPosition().y);
+    double slopeHipKnee = slope(leftHip.getPosition().x, leftHip.getPosition().y,leftKnee.getPosition().x,leftKnee.getPosition().y);
+    double angle1st = findAngle(slopeShoulderHip,slopeHipKnee);
+    System.out.println("Angle 1st =  degrees" + angle1st);
+    if (angle1st>20){
+      wrongPushupSpineAngle = 90 - angle1st;
+      return true;
+    }
+    return false;
   }
 
   private void saveCounter(int count) {

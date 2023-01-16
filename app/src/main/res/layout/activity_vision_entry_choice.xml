@@ -16,7 +16,7 @@
         android:layout_height="wrap_content"
         android:layout_margin="@dimen/activity_vertical_margin"
         android:padding="20dp"
-        android:text="@string/java_entry_title"
+        android:text="PERSONAL TRAINER. Evaluate your workouts by recording yourself"
         android:textSize="26sp" />
 
     <!--<TextView

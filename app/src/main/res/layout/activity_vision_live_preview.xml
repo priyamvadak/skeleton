@@ -77,8 +77,17 @@
         android:textOff=""
         android:textOn=""/>
 
-    <Button
-        android:layout_width="wrap_content"
+    <Button android:layout_width="wrap_content"
+        android:layout_marginRight="5dp"
+        android:layout_height="wrap_content"
+        android:id="@+id/record_button"
+        android:text="@string/record"
+        android:textColor="@color/white"
+        android:textSize="18sp"
+        android:gravity="center_horizontal"
+        />
+
+    <Button android:layout_width="wrap_content"
         android:layout_marginRight="5dp"
         android:layout_height="wrap_content"
         android:id="@+id/feedback_button"
